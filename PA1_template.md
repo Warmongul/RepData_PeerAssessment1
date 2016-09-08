@@ -1,55 +1,74 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
 
 Loading data from activity.zip in working directory. 
 
-```{r}
+
+```r
   data <- read.csv(unz("activity.zip", "activity.csv"))
 ```
 
 
 ## What is mean total number of steps taken per day?
 
-```{r}
+
+```r
    steps.per.day <- aggregate(steps ~ date, data = data, sum)
    hist(steps.per.day$steps, xlab="Step range",breaks=30)
 ```
 
-```{r}
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
+
+
+```r
     summary <- c(mean.steps=mean(steps.per.day$steps), median.steps=median(steps.per.day$steps))
     summary
-``` 
+```
+
+```
+##   mean.steps median.steps 
+##     10766.19     10765.00
+```
 
 ## What is the average daily activity pattern?
 
-```{r}
+
+```r
    average.steps.per.interval <- aggregate(steps ~ interval, data = data, mean)
    plot(average.steps.per.interval$interval, average.steps.per.interval$steps, type="l", 
         xlab="Interval", ylab="Average steps", main="Average steps by interval of day")
-``` 
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
 
 The interval with the maximum average steps is:
-```{r}
+
+```r
     average.steps.per.interval[which(average.steps.per.interval$steps == max(average.steps.per.interval$steps)),"interval"]
+```
+
+```
+## [1] 835
 ```
 
 
 ## Imputing missing values
 
 Total number of missing step values is:
-```{r}
+
+```r
   sum(is.na(data$steps))
 ```
 
+```
+## [1] 2304
+```
+
 The following function will be used to fill in missing step values with the average of the interval. 
-```{r}
+
+```r
   impute.steps <- function(data) {
       for (i in 1:nrow(data)) {
         if (is.na(data[i, "steps"])) {
@@ -60,24 +79,35 @@ The following function will be used to fill in missing step values with the aver
   }
 ```
 New imputed dataset:
-```{r}
+
+```r
   data.imputed <- impute.steps(data)
 ```
 
-```{r}
+
+```r
    steps.per.day <- aggregate(steps ~ date, data = data.imputed, sum)
    hist(steps.per.day$steps, xlab="Step range",breaks=30)
 ```
 
-```{r}
+![](PA1_template_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
+
+
+```r
     summary <- c(mean.steps=mean(steps.per.day$steps), median.steps=median(steps.per.day$steps))
     summary
-``` 
+```
+
+```
+##   mean.steps median.steps 
+##     10766.19     10766.19
+```
 Mean and median before and after imputing remain almost identical. The median approaches the mean as the mean was used for substitution of NA values. 
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-```{r}
+
+```r
   data.imputed$day.of.week <- as.factor(weekdays(as.Date(data.imputed$date)))
   data.imputed$day.type <- as.factor(ifelse(
     data.imputed$day.of.week == "Saturday" | 
@@ -91,3 +121,5 @@ Mean and median before and after imputing remain almost identical. The median ap
   p <- p + geom_line() + facet_grid(day.type ~ .)
   plot(p)
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
